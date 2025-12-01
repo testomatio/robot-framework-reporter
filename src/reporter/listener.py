@@ -102,7 +102,7 @@ class ImportListener:
         test_item.source_code = parser.get_test_code(test.name)
         self.tests.append(test_item)
 
-    def end_suite(self, suite, result):
+    def close(self):
         if not self.enabled or self.remove_ids:
             return
 
@@ -126,4 +126,3 @@ class ImportListener:
                 if test.title == testomatio_test.title and test.suite_title == testomatio_test.suite:
                     parser = TestParser(test.file_path)
                     parser.assign_test_id(test.title, testomatio_test.id)
-        self.tests = []
