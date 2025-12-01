@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "robot-framework-reporter"
+version = "0.1.0"
+description = "Robot Framework plugin for sync and report test to testomat.io"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+    {name = "Vladyslav Krutko", email = "krutkovladyslav@gmail.com"}
+]
+keywords = ["robotframework", "testing", "reporter", "plugin"]
+classifiers = [
+    "Framework :: Robot Framework",
+    "Framework :: Robot Framework :: Library",
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+dependencies = [
+    "robotframework>=4.0",
+    "requests>=2.25.0",
+]
+
+[project.urls]
+"Testomat.io" = "https://testomat.io/"
+Homepage = "https://github.com/testomatio/robot-framework-reporter"
+"Bug Tracker" = "https://github.com/testomatio/robot-framework-reporter/pulls"
+
+[project.entry-points."robotframework.listener"]
+ReporterListener = "reporter.listener:ReportListener"
+
+[tool.setuptools.packages.find]
+where = ["src"]
