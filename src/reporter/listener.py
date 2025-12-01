@@ -15,11 +15,11 @@ DEFAULT_URL = 'https://app.testomat.io'
 class ReportListener:
     ROBOT_LISTENER_API_VERSION = 3
 
-    def __init__(self, testomatio_url: str = None, testomatio_key: str = None):
+    def __init__(self):
         self.enabled = True
 
-        self.report_url = testomatio_url or os.getenv('TESTOMATIO_URL') or DEFAULT_URL
-        self.api_key = testomatio_key or os.getenv('TESTOMATIO')
+        self.report_url = os.getenv('TESTOMATIO_URL') or DEFAULT_URL
+        self.api_key = os.getenv('TESTOMATIO')
         if not self.api_key:
             self.enabled = False
             return
@@ -67,12 +67,12 @@ class ImportListener:
 
     ROBOT_LISTENER_API_VERSION = 3
 
-    def __init__(self, testomatio_url: str = None, testomatio_key: str = None, remove_ids: bool = False,
-                 no_detach: bool = False, no_empty: bool = False, create: bool = False, structure: bool = False):
+    def __init__(self, remove_ids: bool = False, no_detach: bool = False, no_empty: bool = False,
+                 create: bool = False, structure: bool = False):
         self.enabled = True
 
-        self.report_url = testomatio_url or os.getenv('TESTOMATIO_URL') or DEFAULT_URL
-        self.api_key = testomatio_key or os.getenv('TESTOMATIO')
+        self.report_url = os.getenv('TESTOMATIO_URL') or DEFAULT_URL
+        self.api_key = os.getenv('TESTOMATIO')
         if not self.api_key:
             self.enabled = False
             return
@@ -90,8 +90,9 @@ class ImportListener:
         if not self.enabled or not self.remove_ids:
             return
 
-        parser = TestParser(suite.source)
-        parser.remove_test_ids()
+        if suite.source and not os.path.isdir(suite.source):
+            parser = TestParser(suite.source)
+            parser.remove_test_ids()
 
     def end_test(self, test: TestCase, result: CaseResult):
         if not self.enabled or self.remove_ids:
