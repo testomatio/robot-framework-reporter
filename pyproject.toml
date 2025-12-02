@@ -29,7 +29,7 @@ dependencies = [
 [project.urls]
 "Testomat.io" = "https://testomat.io/"
 Homepage = "https://github.com/testomatio/robot-framework-reporter"
-"Bug Tracker" = "https://github.com/testomatio/robot-framework-reporter/pulls"
+"Bug Tracker" = "https://github.com/testomatio/robot-framework-reporter/issues"
 
 [project.entry-points."robotframework.listener"]
 ReporterListener = "reporter.listener:ReportListener"
