@@ -108,11 +108,11 @@ Test Addition @T96c700e6
 Both Listeners use the following environment variables:
 
 | Variable      | Description                                 | Required | Default                   |
-|---------------|---------------------------------------------|---------|---------------------------|
-| `TESTOMATIO`  | API key for accessing Testomat.io           | ✅ Yes | -                         |
-| `TESTOMATIO_URL` | Testomat.io server URL                      | ❌ No | `https://app.testomat.io` |
-| `TESTOMATIO_REQUEST_INTERVAL` | Interval between requests to Testomat.io in seconds |❌ No| `5` |
-| `TESTOMATIO_MAX_REQUEST_FAILURES`| Max attempts to send request to Testomat.io |❌ No | `5` |
+|---------------|---------------------------------------------|----------|---------------------------|
+| `TESTOMATIO`  | API key for accessing Testomat.io           | ✅ Yes    | -                         |
+| `TESTOMATIO_URL` | Testomat.io server URL                      | ➖ No     | `https://app.testomat.io` |
+| `TESTOMATIO_REQUEST_INTERVAL` | Interval between requests to Testomat.io in seconds | ➖ No     | `5` |
+| `TESTOMATIO_MAX_REQUEST_FAILURES`| Max attempts to send request to Testomat.io | ➖ No     | `5` |
 
 ### Import Listener
 Used for importing tests to Testomat.io.
@@ -120,16 +120,16 @@ Used for importing tests to Testomat.io.
 ###### Environment variables
 | Variable | Description                                      | Required |Default                   |
 |----------|--------------------------------------------------|-------|-------------------------|
- |`TESTOMATIO_IMPORT_DIRECTORY`| Specifies directory where tests will be imported |❌ No| `None`|
+ |`TESTOMATIO_IMPORT_DIRECTORY`| Specifies directory where tests will be imported |➖ No| `None`|
 
 ###### Listener Parameters
 | Parameter  | Description                                                    | Required | Type  | Default |
 |------------|----------------------------------------------------------------|------|-------|---------|
-| remove_ids | Remove all test ids from source code                           |❌ No|`bool`|`False`|
-| no_detach  | Disables detaching tests on Testomat.io                        | ❌ No |`bool`|`False`|
-| no_empty   | Removes empty suites on Testomat.io                            | ❌ No |`bool`|`False`|
-| create     | Use to import Test ids set in source code into another project | ❌ No |`bool`|`False`|
-| structure  | Force to keep original file structure                          | ❌ No |`bool`|`False`|
+| remove_ids | Remove all test ids from source code                           |➖ No|`bool`|`False`|
+| no_detach  | Disables detaching tests on Testomat.io                        | ➖ No |`bool`|`False`|
+| no_empty   | Removes empty suites on Testomat.io                            | ➖ No |`bool`|`False`|
+| create     | Use to import Test ids set in source code into another project | ➖ No |`bool`|`False`|
+| structure  | Force to keep original file structure                          | ➖ No |`bool`|`False`|
 #### Clean Test IDs
 If you want to import the synced project as new project, you have to clean the test ids. To clean up test ids  use **remove_ids** parameter:
 ```bash
@@ -166,9 +166,9 @@ Used for reporting test results to Testomat.io. By default, sends test results i
 ###### Environment variables
 | Variable          | Description                                                      | Required | Default |
 |-------------------|------------------------------------------------------------------|----------|-----|
- | `TESTOMATIO_DISABLE_BATCH_UPLOAD` | Disables batch uploading and uploads each test result one by one |❌ No| `False`|
- | `TESTOMATIO_BATCH_SIZE` | Changes size of batch for batch uploading. Maximum is 100.       |❌ No| `50`|
- | `TESTOMATIO_RUN`  | Id of existing test run to use for sending test results to        |❌ No| `None`|
+ | `TESTOMATIO_DISABLE_BATCH_UPLOAD` | Disables batch uploading and uploads each test result one by one |➖ No| `False`|
+ | `TESTOMATIO_BATCH_SIZE` | Changes size of batch for batch uploading. Maximum is 100.       |➖ No| `50`|
+ | `TESTOMATIO_RUN`  | Id of existing test run to use for sending test results to        |➖ No| `None`|
 
 ###### Listener Parameters
 Currently, has no parameters
