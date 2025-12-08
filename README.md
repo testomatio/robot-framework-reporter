@@ -164,11 +164,14 @@ Used for reporting test results to Testomat.io. By default, sends test results i
 #### Report Listener Configuration
 
 ###### Environment variables
-| Variable          | Description                                                      | Required | Default |
-|-------------------|------------------------------------------------------------------|----------|-----|
- | `TESTOMATIO_DISABLE_BATCH_UPLOAD` | Disables batch uploading and uploads each test result one by one |➖ No| `False`|
- | `TESTOMATIO_BATCH_SIZE` | Changes size of batch for batch uploading. Maximum is 100.       |➖ No| `50`|
- | `TESTOMATIO_RUN`  | Id of existing test run to use for sending test results to        |➖ No| `None`|
+| Variable                          | Description                                                                            | Required | Default |
+|-----------------------------------|----------------------------------------------------------------------------------------|----------|---------|
+ | `TESTOMATIO_DISABLE_BATCH_UPLOAD` | Disables batch uploading and uploads each test result one by one                       | ➖ No     | `False` |
+ | `TESTOMATIO_BATCH_SIZE`           | Changes size of batch for batch uploading. Maximum is 100.                             | ➖ No     | `50`    |
+ | `TESTOMATIO_RUN`                  | Id of existing test run to use for sending test results to                             | ➖ No     | `None`  |
+| `TESTOMATIO_PUBLISH`              | Publish run after reporting and provide a public URL                                   | ➖ No     | `False` |
+| `TESTOMATIO_TITLE`                | Name of a test run to create on Testomat.io                                            | ➖ No     | `None`  |
+| `TESTOMATIO_RUNGROUP_TITLE`       | Create a group (folder) for a test run. If group already exists, attach test run to it | ➖ No     | `None`  |
 
 ###### Listener Parameters
 Currently, has no parameters

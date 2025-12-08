@@ -186,10 +186,13 @@ class Connector:
             log.error(f'An unexpected exception occurred. Please report an issue: {e}')
             return
 
-    def create_test_run(self) -> dict | None:
-        # TODO: add access_event, run title, group title, labels, kind, shared run, envs
+    def create_test_run(self, access_event: str | None, title: str | None, group_title: str | None) -> dict | None:
+        # TODO: add labels, kind, shared run, envs
         request = {
             "api_key": self.api_key,
+            "access_event": access_event,
+            "title": title,
+            "group_title": group_title
         }
         filtered_request = {k: v for k, v in request.items() if v is not None}
         try:

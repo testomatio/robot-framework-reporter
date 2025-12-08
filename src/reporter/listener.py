@@ -1,4 +1,5 @@
 import os
+from robot.api import logger
 from robot.model import TestSuite
 from robot.running import TestCase
 from robot.result import TestCase as CaseResult
@@ -27,9 +28,15 @@ class ReportListener:
         self.config = TestrunConfig()
         self.connector = Connector(self.report_url, self.api_key)
         if not self.config.run_id:
-            run_details = self.connector.create_test_run()
+            run_details = self.connector.create_test_run(**self.config.to_dict())
             if run_details:
                 self.config.run_id = run_details.get('uid')
+
+                message = f"\n[TESTOMATIO] Test Run successfully created.\nSee run aggregation at: {run_details.get('url')} \n"
+                public_url = run_details.get('public_url')
+                if self.config.access_event and public_url:
+                    message += f"Public url: {public_url}\n"
+                logger.info(message, also_console=True)
             else:
                 # TODO: add log "Failed to create run"
                 self.enabled = False

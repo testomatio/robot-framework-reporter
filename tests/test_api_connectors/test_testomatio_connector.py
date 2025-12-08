@@ -287,23 +287,51 @@ class TestConnector:
         mock_post.return_value = mock_response
 
         result = connector.create_test_run(
+            access_event='publish',
+            title='Run',
+            group_title='Group1'
         )
 
         mock_post.assert_called_once_with(
             f'{connector.base_url}/api/reporter',
             json={
                 "api_key": "test_api_key_123",
+                "access_event": "publish",
+                "title": "Run",
+                "group_title": "Group1",
             }
         )
 
         assert result == {"uid": "run_123", "title": "Test Run"}
 
     @patch('requests.Session.post')
+    def test_create_test_run_filters_none_values(self, mock_post, connector):
+        """Test None values filtered"""
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {"uid": "run_123"}
+        mock_post.return_value = mock_response
+
+        connector.create_test_run(
+            title=None,
+            access_event=None,
+            group_title=None,
+        )
+
+        payload = mock_post.call_args[1]['json']
+        expected_payload = {
+            "api_key": "test_api_key_123",
+        }
+        assert payload == expected_payload
+
+    @patch('requests.Session.post')
     def test_create_test_run_http_error(self, mock_post, connector):
         """Test HTTP error handled wher create test run"""
         mock_post.side_effect = HTTPError("HTTP Error")
 
-        result = connector.create_test_run()
+        result = connector.create_test_run(
+            None, None, None
+        )
         assert result is None
 
     @patch('requests.Session.post')

@@ -100,6 +100,11 @@ def mock_test_config():
         config_instance = Mock()
         config_instance.run_id = None
         config_instance.batch_upload_disabled = False
+        config_instance.to_dict = lambda: {
+            'access_event': None,
+            'title': None,
+            'group_title': None,
+        }
         mock.return_value = config_instance
         yield mock
 
