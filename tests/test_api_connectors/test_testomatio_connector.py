@@ -254,7 +254,7 @@ class TestConnector:
         mock_response.status_code = 200
         mock_post.return_value = mock_response
 
-        with patch.dict(os.environ, {}, clear=True):
+        with patch.dict(os.environ, {'TESTOMATIO_SYNC_LABELS': 'feature, smoke'}, clear=True):
             connector.load_tests([mock_test])
 
         assert mock_post.call_count == 1
@@ -268,6 +268,7 @@ class TestConnector:
         assert payload['language'] == 'python'
         assert len(payload['tests']) == 1
         assert payload['tests'][0]['name'] == 'Test Login'
+        assert payload['tests'][0]['labels'] == 'feature,smoke'
 
     @patch('requests.Session.post')
     def test_load_tests_connection_error(self, mock_post, connector):

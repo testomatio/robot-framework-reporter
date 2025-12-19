@@ -1,5 +1,7 @@
+import pytest
+
 from models.testomat_item import TestomatItem
-from utils.utils import parse_test_list
+from utils.utils import parse_test_list, safe_string_list
 
 
 class TestParseTestList:
@@ -139,3 +141,47 @@ class TestParseTestList:
 
         assert tests_by_id["T003"].title == "Test Three"
         assert tests_by_id["T003"].file_name == "file.robot"
+
+
+class TestSafeStringListParametrized:
+
+    @pytest.mark.parametrize("input_value", [
+        "",
+        None,
+    ])
+    def test_empty_inputs_return_none(self, input_value):
+        """Empty input return None"""
+        assert safe_string_list(input_value) is None
+
+    @pytest.mark.parametrize("input_str,expected", [
+        ("value", "value"),
+        ("val ue", "value"),
+        (" value ", "value"),
+        ("v a l u e", "value"),
+        ("  value  ", "value"),
+    ])
+    def test_single_values_whitespace_removal(self, input_str, expected):
+        """Whitespace removed for single values"""
+        assert safe_string_list(input_str) == expected
+
+    @pytest.mark.parametrize("input_str,expected", [
+        ("a,b,c", "a,b,c"),
+        ("a b, c d, e f", "ab,cd,ef"),
+        (" a , b , c ", "a,b,c"),
+        ("a\tb,c\nd", "ab,cd"),
+        ("  x  ,  y  ,  z  ", "x,y,z"),
+    ])
+    def test_multiple_values_whitespace_removal(self, input_str, expected):
+        """Whitespaces removed for multiple values"""
+        assert safe_string_list(input_str) == expected
+
+    @pytest.mark.parametrize("input_str,expected", [
+        ("a,,b", "a,,b"),
+        (",a,b,", ",a,b,"),
+        (",,,", ",,,"),
+        ("   ", ""),
+        ("\t\n", ""),
+    ])
+    def test_edge_cases(self, input_str, expected):
+        """Edge cases"""
+        assert safe_string_list(input_str) == expected

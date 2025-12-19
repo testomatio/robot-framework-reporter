@@ -8,6 +8,7 @@ from os.path import join, normpath
 from requests.exceptions import HTTPError, ConnectionError
 
 from models.test_item import TestItem
+from utils.utils import safe_string_list
 
 MAX_RETRIES_DEFAULT = 5
 RETRY_INTERVAL_DEFAULT = 5
@@ -132,7 +133,7 @@ class Connector:
             create: bool = False,
             directory: str = None
     ):
-        # TODO: add description import and sync labels. Change framework to RF when implemented on backend
+        # TODO: add description import. Change framework to RF when implemented on backend
         request = {
             "framework": "pytest",
             "language": "python",
@@ -152,6 +153,7 @@ class Connector:
                 "code": test.source_code,
                 "file": str(test.file_path) if structure else (
                     test.file if directory is None else normpath(join(directory, test.file))),
+                "labels": safe_string_list(getenv('TESTOMATIO_SYNC_LABELS')),
             })
         try:
             response = self._send_request_with_retry('post', f'{self.base_url}/api/load?api_key={self.api_key}', json=request)

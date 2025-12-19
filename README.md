@@ -118,9 +118,10 @@ Both Listeners use the following environment variables:
 Used for importing tests to Testomat.io.
 #### Import Listener Configuration
 ###### Environment variables
-| Variable | Description                                      | Required |Default                   |
-|----------|--------------------------------------------------|-------|-------------------------|
- |`TESTOMATIO_IMPORT_DIRECTORY`| Specifies directory where tests will be imported |➖ No| `None`|
+| Variable                      | Description                                                                                                                                                                                      | Required | Default |
+|-------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|---------|
+ | `TESTOMATIO_IMPORT_DIRECTORY` | Specifies directory where tests will be imported                                                                                                                                                 | ➖ No     | `None`  |
+| `TESTOMATIO_SYNC_LABELS`      | Assign labels to a test case when you import test to Testomat.io. <br/>Labels must exist in project and their scope must be enabled for tests. To pass multiple labels, separate them by a comma | ➖ No     | `None`  |
 
 ###### Listener Parameters
 | Parameter  | Description                                                    | Required | Type  | Default |
