@@ -37,6 +37,12 @@ Install via pip:
 ```bash
 pip install robot-framework-reporter
 ```
+
+If you have Python 2.x and Python 3.x in your system:
+```bash
+pip3 install robot-framework-reporter
+```
+
 ## Quick Start
 
 ### Get your API token
@@ -57,17 +63,7 @@ TESTOMATIO=your_token robot --listener Testomatio.Report path/to/tests
 ### Example of test
 
 After importing tests to Testomat.io, each test is automatically assigned a unique Test ID.  
-Testomat.io Test ID is a string value that starts with `@T` and contains 8 characters after.
-
-Test ID is appended to the test name:
-```robotframework
-*** Test Cases ***
-Test Addition @T96c700e6
-    [Documentation]    Check addition of two numbers
-    [Tags]    math    positive
-    ${result}=    Evaluate    10 + 5
-    Should Be Equal As Numbers    ${result}    15
-```
+Testomat.io Test ID is a string value that starts with `@T` and contains 8 characters after. Test ID is appended to the test name
 
 **Before import** (original test):
 ```robotframework
@@ -88,8 +84,6 @@ Test Addition @T96c700e6
     ${result}=    Evaluate    10 + 5
     Should Be Equal As Numbers    ${result}    15
 ```
-
-> 💡 **Note:** Test ID is added automatically to the test name when using `Testomatio.Import` listener. You don't need to add them manually.
 
 ## Advanced Usage
 
