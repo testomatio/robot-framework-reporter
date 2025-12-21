@@ -101,6 +101,11 @@ class ImportListener:
             parser = TestParser(suite.source)
             parser.remove_test_ids()
 
+    def start_test(self, test: TestCase, result: CaseResult):
+        """Clearing execution body and add keyword to skip test"""
+        test.body.clear()
+        test.body.create_keyword(name='skip', args=['Import only'])
+
     def end_test(self, test: TestCase, result: CaseResult):
         if not self.enabled or self.remove_ids:
             return
