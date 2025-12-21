@@ -36,6 +36,16 @@ Test String Contains @Td664d936
     Should Contain    ${TEST_STRING}    Hello
     Log    String contains substrings
 
+Test @tag @Td664d9fe
+    [Documentation]    Test
+    [Tags]    string
+    Log    Simple test
+
+Test Without ID with @tag
+    [Documentation]    Test without ID
+    [Tags]    string
+    Log    Simple test without ID
+
 Test Without ID
     [Documentation]    Test without ID
     [Tags]    string
@@ -170,12 +180,24 @@ class TestAssignTestId:
         assert "Test Without ID @T99999" in code
 
     def test_assign_test_id_to_test_with_existing_id(self, parser, temp_robot_file):
-        """Test assigning new ID to test with existing ID"""
-        parser.assign_test_id("Test String Length @Tc51dd44d", "@TNEW001")
+        """Test assigning new ID to test with existing ID not dublicates ID"""
+        parser.assign_test_id("Test String Length @Tc51dd44d", "@Tc51dd44d")
 
-        # Verify the change
         new_parser = TestParser(temp_robot_file)
-        code = new_parser.get_test_code("Test String Length @Tc51dd44d @TNEW001")
+        code = new_parser.get_test_code("Test String Length @Tc51dd44d @Tc51dd44d")
+
+        assert code is None
+
+        code = new_parser.get_test_code("Test String Length @Tc51dd44d")
+
+        assert code is not None
+
+    def test_assign_test_id_preserves_tag_in_test_name(self, parser, temp_robot_file):
+        """Test assigning new ID to test with non-existent ID preserve tag"""
+        parser.assign_test_id("Test Without ID with @tag", "@Tc51dd44d")
+
+        new_parser = TestParser(temp_robot_file)
+        code = new_parser.get_test_code("Test Without ID with @tag @Tc51dd44d")
 
         assert code is not None
 
@@ -232,6 +254,17 @@ class TestRemoveTestIds:
 
         assert code is not None
         assert "Test Without ID" in code
+
+    def test_remove_test_ids_preserves_tags_in_name(self, parser, temp_robot_file):
+        """Test that tags in test name preserved"""
+        parser.remove_test_ids()
+
+        new_parser = TestParser(temp_robot_file)
+        code = new_parser.get_test_code("Test @tag")
+
+        assert code is not None
+        assert "Test @tag" in code
+        assert "@Td664d9fe" not in code
 
     def test_remove_test_ids_saves_file(self, parser, temp_robot_file):
         """Test that remove_test_ids saves changes"""

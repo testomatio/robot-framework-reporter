@@ -136,6 +136,8 @@ class ImportListener:
         parsed_tests = parse_test_list(test_ids)
         for test in self.tests:
             for testomatio_test in parsed_tests:
-                if test.title == testomatio_test.title and test.suite_title == testomatio_test.suite:
+                if test.sync_title == testomatio_test.title and test.suite_title == testomatio_test.suite:
                     parser = TestParser(test.file_path)
                     parser.assign_test_id(test.title, testomatio_test.id)
+                    break
+

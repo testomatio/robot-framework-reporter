@@ -9,13 +9,17 @@ def robot_file_with_test_ids(tmp_path):
     """Create a real robot file with test IDs for testing"""
     robot_content = """\
 *** Test Cases ***
-Test With ID @T12345
+Test With ID @T12345678
     Log    Test
     Should Be Equal    1    1
 
-Another Test @TABC999
+Another Test @TABC999de
     Log    Another
     Should Be Equal    2    2
+    
+Test with Tag @Tfds
+    Log    Tag
+    Should Be Equal    3    3
 """
     robot_file = tmp_path / "test_with_ids.robot"
     robot_file.write_text(robot_content, encoding='utf-8')
@@ -397,16 +401,16 @@ class TestImportListener:
                                                 mock_suite, robot_file_with_test_ids):
         """Test start_suite removes IDs from robot file"""
         original_content = robot_file_with_test_ids.read_text(encoding='utf-8')
-        assert '@T12345' in original_content
-        assert '@TABC999' in original_content
+        assert '@T12345678' in original_content
+        assert '@TABC999de' in original_content
 
         listener = ImportListener(remove_ids=True)
         mock_suite.source = str(robot_file_with_test_ids)
 
         listener.start_suite(mock_suite, Mock())
         modified_content = robot_file_with_test_ids.read_text(encoding='utf-8')
-        assert '@T12345' not in modified_content
-        assert '@TABC999' not in modified_content
+        assert '@T12345678' not in modified_content
+        assert '@TABC999de' not in modified_content
         assert 'Test With ID' in modified_content
         assert 'Another Test' in modified_content
 
@@ -460,7 +464,7 @@ class TestImportListener:
 
         test, result = mock_test_and_result
         test.source = robot_file_with_test_ids
-        test.name = 'Test With ID @T12345'
+        test.name = 'Test With ID @T12345678'
         listener.end_test(test, result)
 
         assert len(listener.tests) == 1
@@ -469,12 +473,36 @@ class TestImportListener:
         assert test_item.title == test.name
         assert test_item.file_path == robot_file_with_test_ids
         assert test_item.file == robot_file_with_test_ids.name
-        assert test_item.test_id == '12345'
+        assert test_item.test_id == '12345678'
         assert test_item.source_code == """\
-Test With ID @T12345
+Test With ID @T12345678
     Log    Test
     Should Be Equal    1    1
 
+"""
+
+    def test_end_test_adds_test_with_tag_in_name(self, mock_env_vars, mock_connector,
+                                                 mock_test_and_result,
+                                                 robot_file_with_test_ids):
+        """Test end_test adds test item with tag in name"""
+        listener = ImportListener(remove_ids=False)
+
+        test, result = mock_test_and_result
+        test.source = robot_file_with_test_ids
+        test.name = 'Test with Tag @Tfds'
+        listener.end_test(test, result)
+
+        assert len(listener.tests) == 1
+        test_item = listener.tests[0]
+        assert test_item
+        assert test_item.title == test.name
+        assert test_item.file_path == robot_file_with_test_ids
+        assert test_item.file == robot_file_with_test_ids.name
+        assert test_item.test_id is None
+        assert test_item.source_code == """\
+Test with Tag @Tfds
+    Log    Tag
+    Should Be Equal    3    3
 """
 
     def test_end_test_multiple_tests(self, mock_env_vars, mock_connector,
@@ -581,7 +609,8 @@ Test With ID @T12345
 
         # Setup test item
         test_item = Mock()
-        test_item.title = "Test Name"
+        test_item.title = "Test Name @as"
+        test_item.sync_title = "Test Name"
         test_item.suite_title = "Test Suite"
         test_item.file_path = "/path/to/test.robot"
         listener.tests = [test_item]
@@ -596,7 +625,7 @@ Test With ID @T12345
         listener.close()
 
         mock_test_parser.assert_called_once_with("/path/to/test.robot")
-        mock_test_parser.return_value.assign_test_id.assert_called_once_with("Test Name", "@T123")
+        mock_test_parser.return_value.assign_test_id.assert_called_once_with("Test Name @as", "@T123")
 
     @patch('reporter.listener.parse_test_list')
     def test_close_only_assigns_matching_tests(self, mock_parse, mock_env_vars,
@@ -607,11 +636,13 @@ Test With ID @T12345
         # Setup test items
         test_item1 = Mock()
         test_item1.title = "Test One"
+        test_item1.sync_title = "Test One"
         test_item1.suite_title = "Suite A"
         test_item1.file_path = "/path/test1.robot"
 
         test_item2 = Mock()
         test_item2.title = "Test Two"
+        test_item2.sync_title = "Test Two"
         test_item2.suite_title = "Suite B"
         test_item2.file_path = "/path/test2.robot"
 
@@ -639,11 +670,13 @@ Test With ID @T12345
         # Setup test items
         test_item1 = Mock()
         test_item1.title = "Test Name"
+        test_item1.sync_title = "Test Name"
         test_item1.suite_title = "Suite"
         test_item1.file_path = "/path/test1.robot"
 
         test_item2 = Mock()
         test_item2.title = "Test Name"
+        test_item2.sync_title = "Test Name"
         test_item2.suite_title = "Suite"
         test_item2.file_path = "/path/test2.robot"
 

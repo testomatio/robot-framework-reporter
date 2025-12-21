@@ -51,6 +51,7 @@ class TestTestItem:
         item = TestItem(mock_test_object, mock_result_object)
 
         assert item.title == "Example Test Case"
+        assert item.sync_title == "Example Test Case"
         assert item.status == STATUS_MAP.get(status)
         assert item.run_time == 150000
         assert item.suite_title == "Example Suite"
@@ -58,6 +59,37 @@ class TestTestItem:
         assert item.source_code is None
         assert item.file_path == mock_test_object.source
         assert item.test_id is None
+
+    @pytest.mark.parametrize('tag', ["@smoke", "@Tgfd"])
+    def test_initialization_with_different_tags_in_name(self, tag, mock_test_object, mock_result_object):
+        """Test creating TestItem with different tags in name"""
+        mock_test_object.name = mock_test_object.name + " " + tag
+        item = TestItem(mock_test_object, mock_result_object)
+
+        assert item.title == f"Example Test Case {tag}"
+        assert item.sync_title == f"Example Test Case"
+        assert item.status == "passed"
+        assert item.run_time == 150000
+        assert item.suite_title == "Example Suite"
+        assert item.file == "test_example.robot"
+        assert item.source_code is None
+        assert item.file_path == mock_test_object.source
+        assert item.test_id is None
+
+    def test_initialization_with_test_id(self, mock_test_object, mock_result_object):
+        """Test creating TestItem with test_id"""
+        mock_test_object.name = mock_test_object.name + " " + "@Tghjt34ef"
+        item = TestItem(mock_test_object, mock_result_object)
+
+        assert item.title == f"Example Test Case @Tghjt34ef"
+        assert item.sync_title == f"Example Test Case"
+        assert item.status == "passed"
+        assert item.run_time == 150000
+        assert item.suite_title == "Example Suite"
+        assert item.file == "test_example.robot"
+        assert item.source_code is None
+        assert item.file_path == mock_test_object.source
+        assert item.test_id == "ghjt34ef"
 
     def test_initialization_with_unknown_status(self, mock_test_object, mock_result_object):
         """Test creating TestItem with unknown status"""
@@ -83,12 +115,28 @@ class TestTestItem:
 
     def test_to_dict_with_test_id(self, mock_test_object, mock_result_object):
         """Test to_dict includes test_id when present"""
-        mock_test_object.name = "Login Test @T12345"
+        mock_test_object.name = "Login Test @T12345asd"
 
         item = TestItem(mock_test_object, mock_result_object)
         result = item.to_dict()
+        print(result)
 
-        assert result['test_id'] == "12345"
+        assert result['test_id'] == "12345asd"
+
+    def test_to_dict_with_tags(self, mock_test_object, mock_result_object):
+        """Test to_dict correctly handles tests with tags in name"""
+        mock_test_object.title = "Example Test Case @smoke @Tgfd"
+        item = TestItem(mock_test_object, mock_result_object)
+
+        result = item.to_dict()
+
+        assert isinstance(result, dict)
+        assert result['test_id'] is None
+        assert result['title'] == "Example Test Case"
+        assert result['status'] == "passed"
+        assert result['run_time'] == 150000
+        assert result['suite_title'] == "Example Suite"
+        assert result['file'] == "test_example.robot"
 
     def test_get_test_id_without_marker(self, mock_test_object, mock_result_object):
         """Test extracting test_id when no @T marker present"""
@@ -101,21 +149,21 @@ class TestTestItem:
 
     def test_get_test_id_with_marker(self, mock_test_object, mock_result_object):
         """Test extracting test_id with @T marker"""
-        mock_test_object.name = "User Login @T12345"
+        mock_test_object.name = "User Login @T1234fde5"
 
         item = TestItem(mock_test_object, mock_result_object)
 
-        assert item.get_test_id() == "12345"
-        assert item.test_id == "12345"
+        assert item.get_test_id() == "1234fde5"
+        assert item.test_id == "1234fde5"
 
     def test_get_test_id_with_multiple_markers(self, mock_test_object, mock_result_object):
         """Test extracting test_id when multiple @T markers present (takes last one)"""
-        mock_test_object.name = "Test @T111 something @T99999"
+        mock_test_object.name = "Test @T111 something @T43299999"
 
         item = TestItem(mock_test_object, mock_result_object)
 
-        assert item.get_test_id() == "99999"
-        assert item.test_id == "99999"
+        assert item.get_test_id() == "43299999"
+        assert item.test_id == "43299999"
 
     def test_suite_title_extraction(self, mock_test_object, mock_result_object):
         """Test suite title is correctly extracted from parent"""
@@ -124,4 +172,12 @@ class TestTestItem:
         item = TestItem(mock_test_object, mock_result_object)
 
         assert item.suite_title == "Authentication Suite"
+
+    @pytest.mark.parametrize('tag', ["@smoke", "@Tgfd"])
+    def test_clean_title(self, tag, mock_test_object, mock_result_object):
+        item = TestItem(mock_test_object, mock_result_object)
+        title = item.title + ' ' + tag
+
+        cleaned_title = item.clean_title(title)
+        assert cleaned_title == item.title
 
