@@ -17,14 +17,14 @@ A powerful plugin that integrates your tests with [Testomat.io](https://testomat
 - [Quick Start](#quick-start)
 - [Advanced Usage](#advanced-usage)
   - [Basic Configuration](#basic-configuration)
-  - [Import Listener](#import-listener)
+  - [Import Listener](#testomatioimport-listener)
     - [Listener Configuration](#import-listener-configuration)
     - [Clean Test IDs](#clean-test-ids)
     - [Disable Detach Test](#detaching-tests)
     - [Remove Empty Suites](#removing-empty-suites)
     - [Keep Test IDs Between Projects](#keep-test-ids-between-projects)
     - [Keep structure](#keep-structure)
-  - [Report Listener](#report-listener)
+  - [Report Listener](#testomatioreport-listener)
     - [Listener Configuration](#report-listener-configuration)
 
 ## Installation
@@ -45,14 +45,14 @@ pip install robot-framework-reporter
 3. Click on "Import Tests from Source Code"
 4. Copy your project token(starts with "tstmt_")
 ### Sync tests
-Synchronize tests to Testomat.io using **ImportListener**:
+Synchronize tests to Testomat.io using **Testomatio.Import** listener:
 ```bash
-TESTOMATIO=your_token robot --listener Testomatio.ImportListener path/to/tests
+TESTOMATIO=your_token robot --listener Testomatio.Import path/to/tests
 ```
 ### Report tests
-Execute tests and send results to Testomat.io using **ReportListener**:
+Execute tests and send results to Testomat.io using **Testomatio.Report** listener:
 ```bash
-TESTOMATIO=your_token robot --listener Testomatio.ReportListener path/to/tests
+TESTOMATIO=your_token robot --listener Testomatio.Report path/to/tests
 ```
 ### Example of test
 
@@ -89,13 +89,13 @@ Test Addition @T96c700e6
     Should Be Equal As Numbers    ${result}    15
 ```
 
-> 💡 **Note:** Test ID is added automatically to the test name when using `ImportListener`. You don't need to add them manually.
+> 💡 **Note:** Test ID is added automatically to the test name when using `Testomatio.Import` listener. You don't need to add them manually.
 
 ## Advanced Usage
 
  Testomat.io integration with Robot Framework is implemented through the Listener Interface. Currently, two Listeners are available:
-- **ImportListener**. Used for synchronizing tests with Testomat.io
-- **ReportListener**. Used for reporting test results to Testomat.io
+- **Testomatio.Import**. Used for synchronizing tests with Testomat.io
+- **Testomatio.Report**. Used for reporting test results to Testomat.io
 
 ### Basic Configuration
 
@@ -114,7 +114,7 @@ Both Listeners use the following environment variables:
 | `TESTOMATIO_REQUEST_INTERVAL` | Interval between requests to Testomat.io in seconds | ➖ No     | `5` |
 | `TESTOMATIO_MAX_REQUEST_FAILURES`| Max attempts to send request to Testomat.io | ➖ No     | `5` |
 
-### Import Listener
+### Testomatio.Import Listener
 Used for importing tests to Testomat.io.
 #### Import Listener Configuration
 ###### Environment variables
@@ -134,7 +134,7 @@ Used for importing tests to Testomat.io.
 #### Clean Test IDs
 If you want to import the synced project as new project, you have to clean the test ids. To clean up test ids  use **remove_ids** parameter:
 ```bash
-TESTOMATIO=your_key robot --listener Testomatio.ImportListener:remove_ids=1 path/to/tests
+TESTOMATIO=your_key robot --listener Testomatio.Import:remove_ids=1 path/to/tests
 ```
 This method may be unsafe, as it cleans all @T* tags from tests names. So if you have a tag like @Test1234 in test name this may also be removed. If you use this option make sure if all the test titles a proper before committing the tests in GIT.
 #### Detaching tests
@@ -142,25 +142,25 @@ If a test from a previous import was not found on next import it is marked as "d
 
 To disable this behavior and don't mark anything on detached on import use **no_detach** parameter:
 ```bash
-TESTOMATIO=your_key robot --listener Testomatio.ImportListener:no_detach=1 path/to/tests
+TESTOMATIO=your_key robot --listener Testomatio.Import:no_detach=1 path/to/tests
 ```
 #### Removing empty suites
 If tests were marked with IDs and imported to already created suites in Testomat.io newly imported suites may become empty. Use **no_empty** parameter to clean them up after import.
 ```bash
-TESTOMATIO=your_key robot --listener Testomatio.ImportListener:no_empty=1 path/to/tests
+TESTOMATIO=your_key robot --listener Testomatio.Import:no_empty=1 path/to/tests
 ```
 This prevents usage **structure** parameter.
 #### Keep Test IDs between projects
 To import tests with Test IDs set in source code into another project use **create** parameter. In this case, a new project will be populated with the same Test IDs.
 ```bash
-TESTOMATIO=your_key robot --listener Testomatio.ImportListener:create=1 path/to/tests
+TESTOMATIO=your_key robot --listener Testomatio.Import:create=1 path/to/tests
 ```
 #### Keep structure
 When tests in source code have IDs assigned and those tests are imported, Testomat.io uses current structure in a project to put the tests in. If folders in source code doesn't match folders in Testomat.io project, existing structure in source code will be ignored. To force using the structure from the source code, use **structure** parameter on import:
 ```bash
-TESTOMATIO=your_key robot --listener Testomatio.ImportListener:structure=1 path/to/tests
+TESTOMATIO=your_key robot --listener Testomatio.Import:structure=1 path/to/tests
 ```
-### Report Listener
+### Testomatio.Report Listener
 Used for reporting test results to Testomat.io. By default, sends test results in batches after each test suite completes.
 #### Report Listener Configuration
 
