@@ -1,4 +1,5 @@
 import os
+from robot.api import logger
 from robot.model import TestSuite
 from robot.running import TestCase
 from robot.result import TestCase as CaseResult
@@ -27,9 +28,15 @@ class ReportListener:
         self.config = TestrunConfig()
         self.connector = Connector(self.report_url, self.api_key)
         if not self.config.run_id:
-            run_details = self.connector.create_test_run()
+            run_details = self.connector.create_test_run(**self.config.to_dict())
             if run_details:
                 self.config.run_id = run_details.get('uid')
+
+                message = f"\n[TESTOMATIO] Test Run successfully created.\nSee run aggregation at: {run_details.get('url')} \n"
+                public_url = run_details.get('public_url')
+                if self.config.access_event and public_url:
+                    message += f"Public url: {public_url}\n"
+                logger.info(message, also_console=True)
             else:
                 # TODO: add log "Failed to create run"
                 self.enabled = False
@@ -94,6 +101,11 @@ class ImportListener:
             parser = TestParser(suite.source)
             parser.remove_test_ids()
 
+    def start_test(self, test: TestCase, result: CaseResult):
+        """Clearing execution body and add keyword to skip test"""
+        test.body.clear()
+        test.body.create_keyword(name='skip', args=['Import only'])
+
     def end_test(self, test: TestCase, result: CaseResult):
         if not self.enabled or self.remove_ids:
             return
@@ -124,6 +136,8 @@ class ImportListener:
         parsed_tests = parse_test_list(test_ids)
         for test in self.tests:
             for testomatio_test in parsed_tests:
-                if test.title == testomatio_test.title and test.suite_title == testomatio_test.suite:
+                if test.sync_title == testomatio_test.title and test.suite_title == testomatio_test.suite:
                     parser = TestParser(test.file_path)
                     parser.assign_test_id(test.title, testomatio_test.id)
+                    break
+

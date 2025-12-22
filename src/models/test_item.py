@@ -1,6 +1,10 @@
+import re
+
 from robot.running import TestCase
 from robot.result import TestCase as TestCaseResult
 from robot.result.model import StatusMixin
+
+from utils.constants import TEST_ID_PATTERN
 
 STATUS_MAP = {
     StatusMixin.PASS: 'passed',
@@ -13,6 +17,7 @@ class TestItem:
 
     def __init__(self, test_object: TestCase, result_object: TestCaseResult):
         self.title = test_object.name
+        self.sync_title = self.clean_title(test_object.name)
         self.status = STATUS_MAP.get(result_object.status, None)
         self.run_time = result_object.elapsed_time.microseconds
         self.suite_title = test_object.parent.name
@@ -34,9 +39,11 @@ class TestItem:
 
     def get_test_id(self) -> str | None:
         """Returns testomatio test id from test title"""
-        test_id = None
-        split = self.title.split('@T')
-        if len(split) > 1:
-            test_id = split[-1]
-        return test_id
+        match = re.search(TEST_ID_PATTERN, self.title)
+        if match:
+            return match.group(0)[2:]
+
+    def clean_title(self, title: str) -> str:
+        """Removes @tags that are separated by spaces from the title"""
+        return re.sub(r'\s@\S+', '', title).strip()
 

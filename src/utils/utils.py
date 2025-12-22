@@ -1,3 +1,5 @@
+from re import sub
+
 from models.testomat_item import TestomatItem
 
 
@@ -24,3 +26,10 @@ def parse_test_list(raw_response: dict) -> list[TestomatItem]:
             test['name'] = parts[-1]
         result[value] = test
     return [TestomatItem(id, test['name'], test['file'], test['suite']) for id, test in result.items()]
+
+
+def safe_string_list(param: str) -> str | None:
+    """Clears given string"""
+    if not param:
+        return None
+    return ",".join([sub(r"\s", "", part) for part in param.split(',')])
