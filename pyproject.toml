@@ -34,6 +34,9 @@ Homepage = "https://github.com/testomatio/robot-framework-reporter"
 [project.entry-points."robotframework.listener"]
 ReporterListener = "reporter.listener:ReportListener"
 
+[tool.setuptools]
+py-modules = ["Testomatio"]
+
 [tool.setuptools.packages.find]
 where = ["src"]
 
