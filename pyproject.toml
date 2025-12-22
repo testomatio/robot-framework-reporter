@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "robot-framework-reporter"
-version = "0.2.0"
+version = "0.2.1"
 description = "Robot Framework plugin for sync and report test to testomat.io"
 readme = "README.md"
 license = {text = "MIT"}
