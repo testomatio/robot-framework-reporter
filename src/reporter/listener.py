@@ -146,7 +146,8 @@ class ImportListener:
                                   directory=self.directory)
         test_ids = self.connector.get_tests()
         if not test_ids:
-            # TODO: Add log 'Failed to get test ids from testomat.io'
+            logger.error('Failed to get test ids', console=True)
+            self._disable_listener()
             return
 
         parsed_tests = parse_test_list(test_ids)

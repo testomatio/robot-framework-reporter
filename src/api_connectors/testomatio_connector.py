@@ -154,18 +154,14 @@ class Connector:
             })
         try:
             response = self._send_request_with_retry('post', f'{self.base_url}/api/load?api_key={self.api_key}', json=request)
-        except ConnectionError as ce:
-            log.error(f'Failed to connect to {self.base_url}: {ce}')
-            return
-        except HTTPError as he:
-            log.error(f'HTTP error occurred while connecting to {self.base_url}: {he}')
-            return
         except Exception as e:
-            log.error(f'An unexpected exception occurred. Please report an issue: {e}')
+            log.error(f'Failed to import tests')
             return
 
         if response.status_code < 400:
             log.info(f'Tests loaded to {self.base_url}')
+        elif response.status_code == 403:
+            log.error(FORBIDDEN_MESSAGE)
         else:
             log.error(f'Failed to load tests to {self.base_url}. Status code: {response.status_code}')
 
@@ -175,14 +171,10 @@ class Connector:
             if response.status_code == 200:
                 log.info(f'Test ids received')
                 return response.json()
-        except ConnectionError as ce:
-            log.error(f'Failed to connect to {self.base_url}: {ce}')
-            return
-        except HTTPError as he:
-            log.error(f'HTTP error occurred while connecting to {self.base_url}: {he}')
-            return
+            elif response.status_code == 403:
+                log.error(FORBIDDEN_MESSAGE)
         except Exception as e:
-            log.error(f'An unexpected exception occurred. Please report an issue: {e}')
+            log.error(f'Failed to get test ids')
             return
 
     def create_test_run(self, access_event: str | None, title: str | None, group_title: str | None) -> dict | None:
