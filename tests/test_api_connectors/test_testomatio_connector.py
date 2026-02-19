@@ -146,23 +146,23 @@ class TestConnector:
             assert connector.retry_interval == RETRY_INTERVAL_DEFAULT
 
     @pytest.mark.parametrize("status_code", [400, 404, 429, 500])
-    def test_should_retry_with_skipped_status_codes(self, status_code, connector):
-        """Should not retry on skipped status codes: 400, 404, 429, 500"""
+    def test_should_not_retry_with_non_retry_status_codes(self, status_code, connector):
+        """Should not retry on status codes < 501"""
         response = Mock()
         response.status_code = status_code
 
         assert connector._should_retry(response) is False
 
-    @pytest.mark.parametrize("status_code", [401, 402, 403, 405, 501, 502, 503, 504])
+    @pytest.mark.parametrize("status_code", [501, 502, 503, 504])
     def test_should_retry_on_error_codes(self, status_code, connector):
-        """Should retry on status codes >= 401 (excluding skipped)"""
+        """Should retry on status codes >= 501 (excluding skipped)"""
         response = Mock()
         response.status_code = status_code
 
         assert connector._should_retry(response) is True
 
     @pytest.mark.parametrize("status_code", [200, 201, 204, 301, 302, 304])
-    def test_should_retry_on_success_codes(self, status_code, connector):
+    def test_should_not_retry_on_success_codes(self, status_code, connector):
         """Should not retry on 2xx and 3xx status codes"""
         response = Mock()
         response.status_code = status_code

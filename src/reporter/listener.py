@@ -4,6 +4,7 @@ from robot.model import TestSuite
 from robot.running import TestCase
 from robot.result import TestCase as CaseResult
 
+from api_connectors.exception import ReportFailedException
 from api_connectors.testomatio_connector import Connector
 from models.test_item import TestItem
 from models.testrun_config import TestrunConfig
@@ -22,7 +23,8 @@ class ReportListener:
         self.report_url = os.getenv('TESTOMATIO_URL') or DEFAULT_URL
         self.api_key = os.getenv('TESTOMATIO')
         if not self.api_key:
-            self.enabled = False
+            logger.error('API key not found')
+            self._disable_listener()
             return
 
         self.config = TestrunConfig()
@@ -36,13 +38,16 @@ class ReportListener:
                 public_url = run_details.get('public_url')
                 if self.config.access_event and public_url:
                     message += f"Public url: {public_url}\n"
-                logger.info(message, also_console=True)
+                logger.info(message, console=True)
             else:
-                # TODO: add log "Failed to create run"
-                self.enabled = False
+                self._disable_listener()
 
         self.suite_start_time = None
         self.test_results = []
+
+    def _disable_listener(self):
+        logger.error('Critical error. Reporter will be disabled', console=True)
+        self.enabled = False
 
     def end_test(self, data: TestCase, result: CaseResult):
         if not self.enabled:
@@ -50,7 +55,10 @@ class ReportListener:
 
         test = TestItem(data, result)
         if self.config.batch_upload_disabled:
-            self.connector.update_test_status(run_id=self.config.run_id, **test.to_dict())
+            try:
+                self.connector.update_test_status(run_id=self.config.run_id, **test.to_dict())
+            except ReportFailedException:
+                self._disable_listener()
         else:
             self.test_results.append(test.to_dict())
 
@@ -59,8 +67,11 @@ class ReportListener:
             return
 
         if not self.config.batch_upload_disabled:
-            self.connector.batch_tests_upload(self.config.run_id, self.test_results.copy())
-            self.test_results = []
+            try:
+                self.connector.batch_tests_upload(self.config.run_id, self.test_results.copy())
+                self.test_results = []
+            except ReportFailedException:
+                self._disable_listener()
 
     def close(self):
         if not self.enabled:
@@ -81,7 +92,8 @@ class ImportListener:
         self.report_url = os.getenv('TESTOMATIO_URL') or DEFAULT_URL
         self.api_key = os.getenv('TESTOMATIO')
         if not self.api_key:
-            self.enabled = False
+            logger.error('API key not found')
+            self._disable_listener()
             return
 
         self.connector = Connector(self.report_url, self.api_key)
@@ -92,6 +104,10 @@ class ImportListener:
         self.structure = structure
         self.directory = os.getenv('TESTOMATIO_IMPORT_DIRECTORY', None)
         self.tests = []
+
+    def _disable_listener(self):
+        logger.error('Critical error. Importer will be disabled', console=True)
+        self.enabled = False
 
     def start_suite(self, suite: TestSuite, result: CaseResult):
         if not self.enabled or not self.remove_ids:

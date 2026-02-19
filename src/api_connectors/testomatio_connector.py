@@ -7,6 +7,7 @@ from os import getenv
 from os.path import join, normpath
 from requests.exceptions import HTTPError, ConnectionError
 
+from api_connectors.exception import ReportFailedException
 from models.test_item import TestItem
 from utils.utils import safe_string_list
 
@@ -14,7 +15,9 @@ MAX_RETRIES_DEFAULT = 5
 RETRY_INTERVAL_DEFAULT = 5
 DEFAULT_BATCH_SIZE = 50
 
-log = logging.getLogger('pytestomatio')
+log = logging.getLogger('testomatio_rf_reporter')
+
+FORBIDDEN_MESSAGE = 'Authentication failed. Please check your Testomatio project token. It may be invalid or expired'
 
 
 class MaxRetriesException(Exception):
@@ -85,15 +88,9 @@ class Connector:
 
     def _should_retry(self, response: requests.Response) -> bool:
         """Checks if request should be retried.
-        Skipped status codes explanation:
-         400 - Bad request(probably wrong API key)
-         404 - Resource not found. No point to retry request.
-         429 - Limit exceeded
-         500 - Internal server error
+        Retry only on 501+ status codes
         """
-        if response.status_code in (400, 404, 429, 500):
-            return False
-        return response.status_code >= 401
+        return response.status_code >= 501
 
     def _send_request_with_retry(self, method: str, url: str, **kwargs):
         """Send HTTP request with retry logic"""
@@ -199,19 +196,15 @@ class Connector:
         filtered_request = {k: v for k, v in request.items() if v is not None}
         try:
             response = self._send_request_with_retry('post', f'{self.base_url}/api/reporter', json=filtered_request)
-        except ConnectionError as ce:
-            log.error(f'Failed to connect to {self.base_url}: {ce}')
-            return
-        except HTTPError as he:
-            log.error(f'HTTP error occurred while connecting to {self.base_url}: {he}')
-            return
         except Exception as e:
-            log.error(f'An unexpected exception occurred. Please report an issue: {e}')
+            log.error(f'Failed to create run on Testomat.io')
             return
 
         if response.status_code == 200:
             log.info(f'Test run created {response.json()["uid"]}')
             return response.json()
+        elif response.status_code == 403:
+            log.error(FORBIDDEN_MESSAGE)
 
     def update_test_status(self, run_id: str,
                            status: str,
@@ -233,17 +226,14 @@ class Connector:
         try:
             response = self._send_request_with_retry('post', f'{self.base_url}/api/reporter/{run_id}/testrun?api_key={self.api_key}',
                                                      json=filtered_request)
-        except ConnectionError as ce:
-            log.error(f'Failed to connect to {self.base_url}: {ce}')
-            return
-        except HTTPError as he:
-            log.error(f'HTTP error occurred while connecting to {self.base_url}: {he}')
-            return
         except Exception as e:
-            log.error(f'An unexpected exception occurred. Please report an issue: {e}')
+            log.error(f'Failed to report test')
             return
         if response.status_code == 200:
             log.info('Test status updated')
+        elif response.status_code == 403:
+            log.error(FORBIDDEN_MESSAGE)
+            raise ReportFailedException
 
     def batch_tests_upload(self, run_id: str,
                            tests: list) -> None:
@@ -266,29 +256,24 @@ class Connector:
                                                          json=request)
                 if response.status_code == 200:
                     log.info(f'Tests status updated. Batch index: {batch_index}')
-        except ConnectionError as ce:
-            log.error(f'Failed to connect to {self.base_url}: {ce}')
-            return
-        except HTTPError as he:
-            log.error(f'HTTP error occurred while connecting to {self.base_url}: {he}')
-            return
+                elif response.status_code == 403:
+                    log.error(FORBIDDEN_MESSAGE)
+                    raise ReportFailedException
+        except ReportFailedException as e:
+            raise
         except Exception as e:
-            log.error(f'An unexpected exception occurred. Please report an issue: {e}')
+            log.error(f'Failed to report test')
             return
 
     def finish_test_run(self, run_id: str) -> None:
         try:
-            self._send_request_with_retry('put', f'{self.base_url}/api/reporter/{run_id}?api_key={self.api_key}',
-                                          json={"status_event": "finish"}
-                                          )
-        except ConnectionError as ce:
-            log.error(f'Failed to connect to {self.base_url}: {ce}')
-            return
-        except HTTPError as he:
-            log.error(f'HTTP error occurred while connecting to {self.base_url}: {he}')
-            return
+            response = self._send_request_with_retry('put', f'{self.base_url}/api/reporter/{run_id}?api_key={self.api_key}',
+                                                     json={"status_event": "finish"}
+                                                    )
+            if response.status_code == 403:
+                log.error(FORBIDDEN_MESSAGE)
         except Exception as e:
-            log.error(f'An unexpected exception occurred. Please report an issue: {e}')
+            log.error(f'Failed to finish run')
             return
 
     def disconnect(self):
